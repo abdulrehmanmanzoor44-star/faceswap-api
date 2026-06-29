@@ -5,19 +5,30 @@ import numpy as np
 from flask import Flask, request, jsonify, send_file
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import get_model
-import tempfile
 import io
+import gdown
 
 app = Flask(__name__)
 
 SOURCE_FACE_URL = "https://i.ibb.co/Tq8D18ZL/Ayesha-Sadiq.jpg"
+MODEL_PATH = "/app/inswapper_128.onnx"
+GDRIVE_FILE_ID = "1krOLgjW2tAPaqV-Bw4YALz0xT5zlb5HF"
+
+def download_model():
+    if not os.path.exists(MODEL_PATH):
+        print("Downloading inswapper model from Google Drive...")
+        gdown.download(f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}", MODEL_PATH, quiet=False)
+        print("Model downloaded successfully")
+
+print("Downloading model if needed...")
+download_model()
 
 print("Loading face analysis model...")
 face_app = FaceAnalysis(name='buffalo_l')
 face_app.prepare(ctx_id=-1, det_size=(640, 640))
 
 print("Loading swapper model...")
-swapper = get_model('inswapper_128.onnx', download=True, download_zip=True)
+swapper = get_model(MODEL_PATH, download=False)
 
 def download_image(url):
     resp = requests.get(url, timeout=30)
